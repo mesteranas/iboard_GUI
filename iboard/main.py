@@ -1,6 +1,7 @@
 import sys
 from custome_errors import *
 sys.excepthook = my_excepthook
+from fpdf import fpdf
 import update
 import gui
 import guiTools
@@ -45,6 +46,10 @@ class main (qt.QMainWindow):
         pageMenu.addAction(deleteCurrentPageAction)
         deleteCurrentPageAction.triggered.connect(self.onDeleteCurrentPage)
         deleteCurrentPageAction.setShortcut("alt+delete")
+        saveAsPDFAction=qt1.QAction(_("export as pdf file"),self)
+        pageMenu.addAction(saveAsPDFAction)
+        saveAsPDFAction.triggered.connect(self.on_save)
+        saveAsPDFAction.setShortcut("ctrl+s")
         help=mb.addMenu(_("help"))
         helpFile=qt1.QAction(_("help file"),self)
         help.addAction(helpFile)
@@ -119,6 +124,19 @@ class main (qt.QMainWindow):
             self.pages.pop(self.index)
             self.onPreviousPage()
             guiTools.speak(_("page deleted"))
+    def on_save(self):
+        pdf=fpdf.FPDF()
+        pdf.add_page()
+        for page in self.pages:
+            
+            pdf.set_font(family="Arial")
+            pdf.cell(h=500,w=500,txt=page)
+        file=qt.QFileDialog(self)
+        file.setAcceptMode(file.AcceptMode.AcceptSave)
+        if file.exec()==file.DialogCode.Accepted:
+            pdf.output(file.selectedFiles()[0])
+            qt.QMessageBox.information(self,_("done"),_("saved"))
+
 App=qt.QApplication([])
 w=main()
 w.show()
